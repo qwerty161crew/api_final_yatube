@@ -39,8 +39,9 @@ class FollowSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
+    following = serializers.CharField(source='author')
 
     class Meta:
         model = Follow
-        fields = ('user', 'author')
-        read_only_fields = ('user', 'author')
+        fields = ('id', 'user', 'following')
+        read_only_fields = ('id', 'user', 'following')
