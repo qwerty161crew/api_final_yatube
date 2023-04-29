@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
-
+from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from posts.models import Post, Group, User
@@ -17,6 +17,11 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def list(self, request):
+        # Note the use of `get_queryset()` instead of `self.queryset`
+        queryset = self.get_queryset()
+        serializer = PostSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
