@@ -16,9 +16,9 @@ app_name = 'api'
 
 urlpatterns = [
     path('v1/', include((router.urls, 'api'))),
-    path('v1/jwt/create', TokenObtainPairView.as_view()),
+    path('v1/jwt/create/', TokenObtainPairView.as_view()),
     # JWT-эндпоинты, для управления JWT-токенами:
-    path('v1/jwt/refresh', TokenRefreshView.as_view()),
-    path('v1/jwt/verify', TokenVerifyView.as_view())
+    path('v1/jwt/refresh/', TokenRefreshView.as_view()),
+    path('v1/jwt/verify/', TokenVerifyView.as_view())
 
 ]

@@ -6,13 +6,12 @@ from django.shortcuts import get_object_or_404
 
 from posts.models import Post, Group, User
 from api.serializers import PostSerializer, GroupSerializer, CommentSerializer, FollowSerializer
-from api.permissions import AuthorCreateorDeleteOnly, GetNotAuchOnly
-
+from api.permissions import AuthorDeleteOnly
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = (AuthorCreateorDeleteOnly, IsAuthenticated)
+    permission_classes = (AuthorDeleteOnly, )
     pagination_class = PageNumberPagination
 
     def perform_create(self, serializer):
@@ -22,19 +21,19 @@ class PostViewSet(viewsets.ModelViewSet):
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = (GetNotAuchOnly, )
+    permission_classes = (AuthorDeleteOnly, )
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (AuthorCreateorDeleteOnly, GetNotAuchOnly)
+    permission_classes = (AuthorDeleteOnly, )
 
     def get_queryset(self):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         return post.comments.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, post=get_object_or_404(
+        serializer.save(author=self.request.user.username, post=get_object_or_404(
             Post, pk=self.kwargs.get('post_id')))
 
 
@@ -44,4 +43,4 @@ class FollowViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, author=get_object_or_404(
-            User, pk=self.kwargs.get('author_id')))
+            User, pk=self.kwargs.get('following_id')))
