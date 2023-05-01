@@ -67,11 +67,11 @@ class FollowViewSet(viewsets.ModelViewSet):
         return self.request.user.follower.all()
 
     def perform_create(self, serializer):
-        if not serializer.is_valid() or (
-                self.request.user ==
-                serializer.validated_data['following']):
+        if not serializer.is_valid():
+            raise ValidationError('ошибка валидации')
+        if self.request.user == serializer.validated_data['following']:
             raise ValidationError(
-                'нельзя подписаться на самого себя')
+                'Нельзя подписаться на самого себя')
         try:
             serializer.save(user=self.request.user)
         except IntegrityError as error:
