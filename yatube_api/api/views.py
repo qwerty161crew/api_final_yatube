@@ -1,6 +1,5 @@
-from rest_framework import filters, mixins, permissions, viewsets, pagination
+from rest_framework import filters, mixins, viewsets, pagination
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import filters
 from rest_framework.exceptions import NotAuthenticated, ValidationError
 
 from django.shortcuts import get_object_or_404
