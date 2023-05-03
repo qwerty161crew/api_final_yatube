@@ -1,11 +1,10 @@
-from rest_framework import viewsets, pagination
+from rest_framework import filters, mixins, permissions, viewsets, pagination
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 from rest_framework import filters
 from rest_framework.exceptions import NotAuthenticated, ValidationError
-from django.db.utils import IntegrityError
 
+from django.shortcuts import get_object_or_404
+from django.db.utils import IntegrityError
 
 from posts.models import Post, Group, Follow
 from api.serializers import (PostSerializer, GroupSerializer,
@@ -31,12 +30,6 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (AuthorDeleteOnly, )
     pagination_class = pagination.LimitOffsetPagination
 
-    def list(self, request):
-        # Note the use of `get_queryset()` instead of `self.queryset`
-        queryset = self.get_queryset()
-        serializer = GroupSerializer(queryset, many=True)
-        return Response(serializer.data)
-
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
@@ -55,7 +48,9 @@ class CommentViewSet(viewsets.ModelViewSet):
                             Post, pk=self.kwargs.get('post_id')))
 
 
-class FollowViewSet(viewsets.ModelViewSet):
+class FollowViewSet(mixins.CreateModelMixin,
+                    mixins.ListModelMixin,
+                    viewsets.GenericViewSet):
     serializer_class = FollowSerializer
     permission_classes = (IsAuthenticated, )
     pagination_class = pagination.LimitOffsetPagination
@@ -67,11 +62,6 @@ class FollowViewSet(viewsets.ModelViewSet):
         return self.request.user.follower.all()
 
     def perform_create(self, serializer):
-        if not serializer.is_valid():
-            raise ValidationError('ошибка валидации')
-        if self.request.user == serializer.validated_data['following']:
-            raise ValidationError(
-                'Нельзя подписаться на самого себя')
         try:
             serializer.save(user=self.request.user)
         except IntegrityError as error:

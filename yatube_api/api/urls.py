@@ -11,7 +11,6 @@ router.register('groups', GroupViewSet, basename='group')
 router.register(r'posts/(?P<post_id>\d+)/comments',
                 CommentViewSet, basename='comment')
 router.register('follow', FollowViewSet, basename='follow')
-print(router)
 
 
 app_name = 'api'
