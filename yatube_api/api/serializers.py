@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-
 from django.db import models
+from rest_framework.generics import get_object_or_404
 
 from posts.models import Comment, Post, Group, Follow, User
 
@@ -41,6 +41,18 @@ class FollowSerializer(serializers.ModelSerializer):
     following = serializers.SlugRelatedField(
         slug_field='username',
         queryset=User.objects.all())
+
+    def validate(self, data):
+        user = get_object_or_404(User, username=data['following'].username)
+        follow = Follow.objects.filter(
+            user=self.context['request'].user, following=user).exists()
+        if user == self.context['request'].user:
+            raise serializers.ValidationError(
+                "Вы не можете подписаться сам на себя")
+        if follow is True:
+            raise serializers.ValidationError(
+                "Вы уже подписаны на пользователя")
+        return data
 
     class Meta:
         model = Follow

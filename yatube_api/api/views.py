@@ -1,11 +1,9 @@
 from rest_framework import filters, mixins, viewsets, pagination
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import NotAuthenticated, ValidationError
-
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from django.shortcuts import get_object_or_404
-from django.db.utils import IntegrityError
 
-from posts.models import Post, Group, Follow
+from posts.models import Post, Group
 from api.serializers import (PostSerializer, GroupSerializer,
                              CommentSerializer, FollowSerializer)
 from api.permissions import AuthorDeleteOnly
@@ -14,12 +12,10 @@ from api.permissions import AuthorDeleteOnly
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = (AuthorDeleteOnly, )
+    permission_classes = (AuthorDeleteOnly, IsAuthenticatedOrReadOnly)
     pagination_class = pagination.LimitOffsetPagination
 
     def perform_create(self, serializer):
-        if not self.request.user.is_authenticated:
-            raise NotAuthenticated
         serializer.save(author=self.request.user)
 
 
@@ -32,7 +28,7 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (AuthorDeleteOnly, )
+    permission_classes = (AuthorDeleteOnly, IsAuthenticatedOrReadOnly)
     pagination_class = pagination.LimitOffsetPagination
 
     def get_queryset(self):
@@ -40,8 +36,6 @@ class CommentViewSet(viewsets.ModelViewSet):
         return post.comments.all()
 
     def perform_create(self, serializer):
-        if not self.request.user.is_authenticated:
-            raise NotAuthenticated
         serializer.save(author=self.request.user,
                         post=get_object_or_404(
                             Post, pk=self.kwargs.get('post_id')))
@@ -53,7 +47,6 @@ class FollowViewSet(mixins.CreateModelMixin,
     serializer_class = FollowSerializer
     permission_classes = (IsAuthenticated, )
     pagination_class = pagination.LimitOffsetPagination
-    queryset = Follow.objects.all()
     filter_backends = [filters.SearchFilter]
     search_fields = ['following__username', 'user__username']
 
@@ -61,7 +54,4 @@ class FollowViewSet(mixins.CreateModelMixin,
         return self.request.user.follower.all()
 
     def perform_create(self, serializer):
-        try:
-            serializer.save(user=self.request.user)
-        except IntegrityError as error:
-            raise ValidationError(error)
+        serializer.save(user=self.request.user)
