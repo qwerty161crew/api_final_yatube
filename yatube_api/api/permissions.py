@@ -6,7 +6,5 @@ class AuthorDeleteOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         if request.user.is_authenticated:
-            if request.method in 'DELETE':
-                return obj.author == request.user
             return obj.author == request.user
         return False
