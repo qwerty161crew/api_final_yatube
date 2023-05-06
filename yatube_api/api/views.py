@@ -6,13 +6,13 @@ from django.shortcuts import get_object_or_404
 from posts.models import Post, Group
 from api.serializers import (PostSerializer, GroupSerializer,
                              CommentSerializer, FollowSerializer)
-from api.permissions import AuthorDeleteOnly
+from api.permissions import AuthorOnly
 
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = (AuthorDeleteOnly, IsAuthenticatedOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly, AuthorOnly)
     pagination_class = pagination.LimitOffsetPagination
 
     def perform_create(self, serializer):
@@ -22,13 +22,13 @@ class PostViewSet(viewsets.ModelViewSet):
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = (AuthorDeleteOnly, )
+    permission_classes = (AuthorOnly, )
     pagination_class = pagination.LimitOffsetPagination
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (AuthorDeleteOnly, IsAuthenticatedOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly, AuthorOnly)
     pagination_class = pagination.LimitOffsetPagination
 
     def get_queryset(self):
