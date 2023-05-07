@@ -48,10 +48,10 @@ class FollowSerializer(serializers.ModelSerializer):
             user=self.context['request'].user, following=user).exists()
         if user == self.context['request'].user:
             raise serializers.ValidationError(
-                "Вы не можете подписаться сам на себя")
+                'Вы не можете подписаться сам на себя')
         if follow is True:
             raise serializers.ValidationError(
-                "Вы уже подписаны на пользователя")
+                'Вы уже подписаны на пользователя')
         return data
 
     class Meta:
